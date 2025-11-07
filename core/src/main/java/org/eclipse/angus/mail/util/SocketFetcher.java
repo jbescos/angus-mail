@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2024 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2025 Oracle and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -638,6 +638,43 @@ public class SocketFetcher {
                     prefix + ".ssl.checkserveridentity", true)
                     ? "LDAPS" : (String) null;
             SSLParameters params = sslsocket.getSSLParameters();
+            /*
+            https://github.com/eclipse-ee4j/angus-mail/issues/187
+            Setting setEndpointIdentificationAlgorithm to not null, overrides MailTrustManager#checkServerTrusted, as seen in this stacktrace.
+            As a result, trusted hosts are not verified when ssl.checkserveridentity = true
+            
+                Caused by: javax.net.ssl.SSLHandshakeException: No subject alternative DNS name matching mailtest.local found.
+                at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:130)
+                at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:378)
+                at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:321)
+                at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:316)
+                at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1318)
+                at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1195)
+                at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1138)
+                at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:393)
+                at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:476)
+                at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:447)
+                at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+                at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+                at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+                at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+                at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+                at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+                at org.eclipse.angus.mail.util.SocketFetcher.configureSSLSocket(SocketFetcher.java:662)
+                at org.eclipse.angus.mail.util.SocketFetcher.createSocket(SocketFetcher.java:409)
+                at org.eclipse.angus.mail.util.SocketFetcher.getSocket(SocketFetcher.java:243)
+                at org.eclipse.angus.mail.smtp.SMTPTransport.openServer(SMTPTransport.java:2193)
+                ... 33 more
+            Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching mailtest.local found.
+                at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:207)
+                at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103)
+                at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:461)
+                at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:417)
+                at java.base/sun.security.ssl.AbstractTrustManagerWrapper.checkAdditionalTrust(SSLContextImpl.java:1463)
+                at java.base/sun.security.ssl.AbstractTrustManagerWrapper.checkServerTrusted(SSLContextImpl.java:1431)
+                at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1302)
+                ... 48 more
+            */
             params.setEndpointIdentificationAlgorithm(eia);
             sslsocket.setSSLParameters(params);
 
