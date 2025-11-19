@@ -150,7 +150,6 @@ public class SmtpStartTlsTrustTest {
     }
 
     @Test
-    @Ignore("Reproduces issue 187")
     public void testTrustAllHostsEnableServerIdentity() throws Exception {
         Properties props = new Properties();
         props.put("mail.smtps.host", "mailtest.local");
@@ -182,7 +181,7 @@ public class SmtpStartTlsTrustTest {
             fail("Expects exception");
         } catch (MessagingException e) {
             e.printStackTrace();
-            assertEquals(SSLHandshakeException.class, e.getCause().getClass());
+            assertEquals("Server is not trusted: mailtest.local", e.getCause().getMessage());
         }
     }
 }
