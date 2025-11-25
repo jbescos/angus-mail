@@ -13,11 +13,6 @@
     to pass the connected SSLSocket or SSLEngine to the TrustManager during
     certificate validation.
 
-    Prior to this change, MailTrustManager only received the certificate chain
-    and authentication type. As a result, it could not participate in hostname
-    verification triggered by the SSLParameters endpoint identification
-    algorithm.
-
 	As a result of this, setting mail.<protocol>.ssl.checkserveridentity = true
 	will check trusted hosts.
 

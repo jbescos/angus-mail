@@ -43,6 +43,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
+import org.eclipse.angus.mail.test.TestServer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -84,7 +85,7 @@ public class SmtpStartTlsTrustTest {
         es.execute(() -> {
             try {
                 KeyStore ks = KeyStore.getInstance("JKS");
-                ks.load(SmtpStartTlsTrustTest.class.getResourceAsStream("/keystore.jks"), "changeit".toCharArray());
+                ks.load(TestServer.class.getResourceAsStream("keystore.jks"), "changeit".toCharArray());
 
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(ks, "changeit".toCharArray());
@@ -183,5 +184,21 @@ public class SmtpStartTlsTrustTest {
             e.printStackTrace();
             assertEquals("Server is not trusted: mailtest.local", e.getCause().getMessage());
         }
+    }
+
+    @Test
+    public void testHostnameVerificationWorks() throws Exception {
+        Properties props = new Properties();
+        props.put("mail.smtps.host", "mailtest.local");
+        props.put("mail.smtps.port", PORT);
+        props.put("mail.smtps.starttls.enable", "true");
+        props.put("mail.smtps.ssl.trust", "other.domain");
+        // Doesn't check host
+        props.put("mail.smtps.ssl.checkserveridentity", "false");
+
+        Session session = Session.getInstance(props);
+        Transport transport = session.getTransport("smtps");
+        transport.connect();
+        transport.close();
     }
 }
